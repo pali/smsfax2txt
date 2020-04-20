@@ -1,0 +1,74 @@
+#!/usr/bin/perl
+# (c) Pali 2020, Perl license
+#
+# smsfax2txt - OCR and parse SMS messages received as FAX bitmap images
+#
+# SMS messages sent to all fixed lines and VOIP numbers in Czech Republic are
+# delivered either in voice or FAX format based on CNG FAX signal detection
+# after answering call. Caller id for these SMS calls is 284001000. Delivery
+# is performed by Materna company.
+#
+# This script takes at its input PDF file with SMS message received in FAX
+# format. It tries to OCR it and then tries to parse content and prints body of
+# message itself. Script also tried to restore original layout of SMS.
+#
+# Dependences for this script: tesseract-ocr tesseract-ocr-ces poppler-utils
+#
+# mailcap entry for viewing these SMS messages with automatic detection of file
+# type based on PDF file name and presence of needed tools:
+#
+# application/pdf; smsfax2txt %s; nametemplate=%s.pdf; test=\
+#   which smsfax2txt 1>/dev/null 2>&1 && which tesseract 1>/dev/null 2>&1 && \
+#   which pdftotext 1>/dev/null 2>&1 && which pdfimages 1>/dev/null 2>&1 && \
+#   echo %s | grep -q -E '^[0-9]{4}\.[0-9]{2}\.[0-9]{2}_[0-9]{2}-' && \
+#   echo %s | grep -q -E '[0-9]{2}-[0-9]{2}-284001000-[0-9]{9}-1_str\.pdf$'; \
+#   copiousoutput;
+
+use strict;
+use warnings;
+use File::Temp 'tempfile';
+
+my $pdf = $ARGV[0];
+die "Usage: $0 smsfax.pdf" unless length $pdf;
+
+my (undef, $txt) = tempfile(SUFFIX => '.txt', UNLINK => 1);
+my (undef, $ocr) = tempfile(SUFFIX => '.pdf', UNLINK => 1);
+my (undef, $tif) = tempfile(SUFFIX => '-000.tif', UNLINK => 1);
+
+my $orc_noext = $ocr;
+$orc_noext =~ s/\.pdf$//;
+
+my $tif_noext = $tif;
+$tif_noext =~ s/-000\.tif$//;
+
+system 'pdfimages', '-f', 1, '-l', 1, '-tiff', $pdf, $tif_noext;
+die "pdfimages failed\n" unless $? == 0;
+
+system 'tesseract', '-l', 'ces', '--psm', '4', $tif, $orc_noext, 'pdf', 'quiet';
+die "tesseract failed\n" unless $? == 0;
+
+system 'pdftotext', '-layout', '-nopgbrk', '-fixed', '17', $ocr, $txt;
+die "pdftotext failed\n" unless $? == 0;
+
+open my $fh, '<', $txt;
+die "opening text file failed\n" unless defined $fh;
+
+my $raw = '';
+while (<$fh>) {
+	chomp $_;
+	utf8::decode($_);
+	$_ .= ' ' x (94 - length $_) if length $_ < 94;
+	$_ =~ s/^\s{10}//;
+	utf8::encode($_);
+	$raw .= $_;
+}
+
+$raw =~ /To:\s*(\S+).*?From:\s*(\S+).*?Date:\s*(.+?)\s*Stran.*?TEXT:\s*"(.*)"/s;
+my ($to, $from, $date, $text) = ($1, $2, $3, $4);
+die "unrecognized format/layout\n" unless defined $to;
+
+$text =~ s/ dvojtecka /:/g;
+$text =~ s/ minus /-/g;
+$text =~ s/ lomeno /\//g;
+
+print "From: $from\nTo: $to\nDate: $date\n\n$text\n";
