@@ -29,7 +29,7 @@ use warnings;
 use File::Temp 'tempfile';
 
 my $pdf = $ARGV[0];
-die "Usage: $0 smsfax.pdf" unless length $pdf;
+die "Usage: $0 smsfax.pdf\n" unless length $pdf;
 
 my (undef, $txt) = tempfile(SUFFIX => '.txt', UNLINK => 1);
 my (undef, $ocr) = tempfile(SUFFIX => '.pdf', UNLINK => 1);
@@ -44,7 +44,7 @@ $tif_noext =~ s/-000\.tif$//;
 system 'pdfimages', '-f', 1, '-l', 1, '-tiff', $pdf, $tif_noext;
 die "pdfimages failed\n" unless $? == 0;
 
-system 'tesseract', '-l', 'ces', '--psm', '4', $tif, $orc_noext, 'pdf', 'quiet';
+system 'tesseract', $tif, $orc_noext, '-l', 'ces', '--psm', '4', 'pdf', 'quiet';
 die "tesseract failed\n" unless $? == 0;
 
 system 'pdftotext', '-layout', '-nopgbrk', '-fixed', '17', $ocr, $txt;
