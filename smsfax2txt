@@ -64,7 +64,7 @@ while (<$fh>) {
 	$raw .= $_;
 }
 
-$raw =~ /To:\s*(\S+).*?From:\s*(\S+).*?Date:\s*(.+?)\s*Stran.*?TEXT:\s*"(.*)"/s;
+$raw =~ /To:\s*(\S+).*?From:\s*(\S+).*?Date:\s*(.+?)\s*Stran.*?TEXT:\s*(?:"|\xE2\x80\x9C)(.*)(?:"|\xE2\x80\x9C)/s;
 my ($to, $from, $date, $text) = ($1, $2, $3, $4);
 die "unrecognized format/layout\n" unless defined $to;
 
