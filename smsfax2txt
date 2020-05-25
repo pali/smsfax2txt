@@ -24,6 +24,7 @@
 #   echo %s | grep -q -E '[0-9]{2}-[0-9]{2}-284001000-[0-9]{9}-1_str\.pdf$'; \
 #   copiousoutput;
 
+use 5.008;
 use strict;
 use warnings;
 use File::Temp 'tempfile';
