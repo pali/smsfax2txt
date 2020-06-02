@@ -4,9 +4,9 @@
 # smsfax2txt - OCR and parse SMS messages received as FAX bitmap images
 #
 # SMS messages sent to all fixed lines and VOIP numbers in Czech Republic are
-# delivered either in voice or FAX format based on CNG FAX signal detection
-# after answering call. Caller id for these SMS calls is 284001000. Delivery
-# is performed by Materna company.
+# delivered either in voice or FAX format based on CED FAX signal detection
+# (high-pitched 2100Hz long tone) after answering call. Caller id for these
+# SMS calls is 284001000. Delivery is performed by Materna company.
 #
 # This script takes at its input PDF file with SMS message received in FAX
 # format. It tries to OCR it and then tries to parse content and prints body of
