@@ -20,8 +20,8 @@
 # application/pdf; smsfax2txt %s; nametemplate=%s.pdf; test=\
 #   which smsfax2txt 1>/dev/null 2>&1 && which tesseract 1>/dev/null 2>&1 && \
 #   which pdftotext 1>/dev/null 2>&1 && which pdfimages 1>/dev/null 2>&1 && \
-#   echo %s | grep -q -E '^[0-9]{4}\.[0-9]{2}\.[0-9]{2}_[0-9]{2}-' && \
-#   echo %s | grep -q -E '[0-9]{2}-[0-9]{2}-284001000-[0-9]{9}-1_str\.pdf$'; \
+#   echo %s | grep -q -E '^[0-9]{4}\\.[0-9]{2}\\.[0-9]{2}_[0-9]{2}-' && \
+#   echo %s | grep -q -E '[0-9]{2}-[0-9]{2}-284001000-[0-9]{9}-1_str\\.pdf$'; \
 #   copiousoutput;
 
 use 5.008;
